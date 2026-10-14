@@ -2,6 +2,8 @@
 
 🇧🇷 Português · 🇺🇸 [English](README.md)
 
+🔗 **Portfólio:** este e os meus outros projetos em [felipebherve.github.io](https://felipebherve.github.io/#projects).
+
 ## Em que momento eu fiz isto
 
 Este foi o **desafio final** do curso de backend do IFRS + Instituto Hardware (agosto de 2026). As anotações de aula me ensinaram as peças uma a uma (models, managers, serializers, URLs, views); o desafio pedia que eu juntasse todas em um projeto que eu ainda não tinha visto, a partir de um enunciado escrito sobre uma empresa de software fictícia, a **TechTinga**.
