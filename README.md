@@ -2,6 +2,8 @@
 
 🇺🇸 English · 🇧🇷 [Português](README.pt-BR.md)
 
+🔗 **Portfolio:** this project and my others at [felipebherve.github.io](https://felipebherve.github.io/#projects).
+
 ## Where I was when I made this
 
 This was the **final challenge** of the IFRS + Instituto Hardware backend course (August 2026). The class notes taught me the pieces one at a time (models, managers, serializers, URLs, views); the challenge asked me to put all of them together in a project I had not seen before, from a written brief about a fictional software company, **TechTinga**.
