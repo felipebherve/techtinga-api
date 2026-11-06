@@ -1,5 +1,7 @@
 from django.db import models
+
 from gestao.enumerations import Status
+
 
 class TarefaManager(models.Manager):
 
@@ -16,6 +18,11 @@ class TarefaManager(models.Manager):
         Retorna as tarefas associadas a um projeto específico,
         ordenadas por responsável, status e data de criação.
         """
+        from gestao.models.projeto import Projeto
+
+        if not isinstance(projeto, Projeto) or projeto.pk is None:
+            raise ValueError("Informe um projeto cadastrado.")
+
         return self.filter(projeto=projeto).order_by('responsavel', 'status', 'criacao')
 
     def listar_tarefas_colaborador(self, responsavel):
@@ -23,4 +30,7 @@ class TarefaManager(models.Manager):
         Retorna as tarefas atribuídas a um colaborador/responsável,
         agrupadas por status e ordenadas por data de criação.
         """
-        return self.filter(responsavel=responsavel).order_by('status', 'criacao')
+        if not isinstance(responsavel, str) or len(responsavel.strip()) < 3:
+            raise ValueError("Informe o nome do responsável com pelo menos 3 letras.")
+
+        return self.filter(responsavel=responsavel.strip()).order_by('status', 'criacao')
