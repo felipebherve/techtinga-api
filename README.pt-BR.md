@@ -48,7 +48,9 @@ curl -X POST http://127.0.0.1:8000/api/token/ -d "username=admin&password=SUA_SE
 curl http://127.0.0.1:8000/api/projetos/ -H "Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b"
 ```
 
-Sem token a API responde `401`. Com token, mas sem a permissão necessária, responde `403`.
+Sem token a API responde `401`. Com token, mas sem a permissão necessária, responde `403`. O `PATCH` altera só os campos enviados.
+
+O arquivo [`docs/api.http`](docs/api.http) tem exemplos prontos de todas as chamadas.
 
 ### Importar o CSV
 

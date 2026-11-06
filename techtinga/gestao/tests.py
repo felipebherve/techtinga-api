@@ -181,6 +181,22 @@ class CrudProjetoComTokenTests(TestCase):
         self.assertEqual(self.client.delete(f'/api/projetos/{pk}/').status_code, 204)
         self.assertFalse(Projeto.objects.filter(pk=pk).exists())
 
+    def test_previsao_antes_do_inicio_devolve_400(self):
+        self.autenticar('add_projeto')
+        dados = dict(self.dados, previsao_termino='2026-01-01')
+        resposta = self.client.post('/api/projetos/', dados)
+        self.assertEqual(resposta.status_code, 400)
+        self.assertIn('previsao_termino', resposta.json())
+
+    def test_patch_altera_so_o_campo_enviado(self):
+        self.autenticar('change_projeto')
+        projeto = criar_projeto()
+        resposta = self.client.patch(f'/api/projetos/{projeto.pk}/', {'nome': 'Nome novo do projeto'})
+        self.assertEqual(resposta.status_code, 200)
+        projeto.refresh_from_db()
+        self.assertEqual(projeto.nome, 'Nome novo do projeto')
+        self.assertEqual(projeto.cliente, 'Cliente Teste')
+
     def test_token_e_unico_por_usuario(self):
         self.autenticar()
         self.assertEqual(Token.objects.filter(user=self.usuario).count(), 1)

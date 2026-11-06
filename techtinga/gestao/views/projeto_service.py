@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -16,6 +17,17 @@ class ProjetoService(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated, DjangoModelPermissions]
     queryset = Projeto.objects.all()
+
+    def salvar(self, serializer, status_sucesso=status.HTTP_200_OK):
+        """Salva o serializer e transforma erros de validação do model em 400."""
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            serializer.save()
+        except DjangoValidationError as erro:
+            detalhes = erro.message_dict if hasattr(erro, 'error_dict') else {'erro': erro.messages}
+            return Response(detalhes, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status_sucesso)
 
     def get_object(self, pk):
         try:
@@ -41,13 +53,10 @@ class ProjetoService(APIView):
     def post(self, request):
         """Criar um novo projeto"""
         serializer = ProjetoSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return self.salvar(serializer, status.HTTP_201_CREATED)
 
-    def put(self, request, pk=None):
-        """Atualizar um registro existente"""
+    def put(self, request, pk=None, parcial=False):
+        """Atualizar um registro existente (PUT completo ou PATCH parcial)"""
         if not pk:
             return Response({"error": "Informe o ID do projeto para atualização."}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -55,11 +64,12 @@ class ProjetoService(APIView):
         if not projeto:
             return Response({"error": "Projeto não encontrado."}, status=status.HTTP_404_NOT_FOUND)
         
-        serializer = ProjetoSerializer(projeto, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = ProjetoSerializer(projeto, data=request.data, partial=parcial)
+        return self.salvar(serializer)
+
+    def patch(self, request, pk=None):
+        """Atualizar só os campos enviados"""
+        return self.put(request, pk, parcial=True)
 
     def delete(self, request, pk=None):
         """Deletar um registro"""
