@@ -1,5 +1,10 @@
+from datetime import date
+
 from django.db import models
-from django.db.models import Count, Sum, Q
+from django.db.models import Q
+
+from gestao.enumerations import LinguagemProgramacao
+
 
 class ProjetoManager(models.Manager):
 
@@ -16,6 +21,14 @@ class ProjetoManager(models.Manager):
         Retorna os projetos que possuem tarefas criadas/iniciadas no período
         informado e desenvolvidas na linguagem especificada.
         """
+        if not isinstance(inicio, date) or not isinstance(fim, date):
+            raise ValueError("Os parâmetros 'inicio' e 'fim' devem ser datas.")
+        if fim < inicio:
+            raise ValueError("A data 'fim' não pode ser anterior à data 'inicio'.")
+        if linguagem not in LinguagemProgramacao.values:
+            opcoes = ', '.join(LinguagemProgramacao.values)
+            raise ValueError(f"Linguagem inválida. Use uma destas: {opcoes}.")
+
         return self.filter(
             tarefas__criacao__date__gte=inicio,
             tarefas__criacao__date__lte=fim,

@@ -1,15 +1,21 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import DjangoModelPermissions, IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 
 from gestao.models import Projeto
 from gestao.serializers import ProjetoSerializer
 
 class ProjetoService(APIView):
+    """
+    CRUD de projetos. Exige token (cabeçalho Authorization: Token <chave>)
+    e as permissões padrão do Django para o modelo Projeto
+    (add_projeto, change_projeto e delete_projeto).
+    """
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, DjangoModelPermissions]
+    queryset = Projeto.objects.all()
 
     def get_object(self, pk):
         try:
