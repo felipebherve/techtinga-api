@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import DjangoModelPermissions
 from rest_framework.authentication import TokenAuthentication
 
 from gestao.models import Projeto
@@ -9,7 +9,8 @@ from gestao.serializers import ProjetoSerializer
 
 class ProjetoService(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [DjangoModelPermissions]
+    queryset = Projeto.objects.all()  # usado pelo DjangoModelPermissions para saber o model
 
     def get_object(self, pk):
         try:
