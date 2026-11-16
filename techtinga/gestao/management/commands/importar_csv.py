@@ -1,6 +1,7 @@
 import csv
 from datetime import datetime, date
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 from gestao.models.projeto import Projeto
 from gestao.models.tarefa import Tarefa
 
@@ -8,7 +9,7 @@ from gestao.models.tarefa import Tarefa
 class Command(BaseCommand):
     help = 'Importa projetos e tarefas a partir do arquivo CSV'
 
-    def add_argument(self, parser):
+    def add_arguments(self, parser):
         parser.add_argument(
             '--csv',
             type=str,
@@ -16,15 +17,19 @@ class Command(BaseCommand):
             help='Caminho para o arquivo CSV'
         )
 
+    def ler_data_hora(self, valor):
+        """Converte o texto ISO do CSV em data e hora no fuso do projeto."""
+        if not valor or not valor.strip():
+            return None
+        data_hora = datetime.fromisoformat(valor.strip())
+        if timezone.is_naive(data_hora):
+            data_hora = timezone.make_aware(data_hora)
+        return data_hora
+
     def handle(self, *args, **options):
-        caminho_csv = options.get('csv', 'techtinga.csv')
+        caminho_csv = options['csv']
         sucesso = 0
         erros = 0
-
-        # Opções do Enum aceitas pelo model Projeto
-        MAPEAMENTO_TIPO = {
-            'DESKTOP': 'WEB',  # Ajuste para uma opção válida do seu Enum caso DESKTOP não exista
-        }
 
         with open(caminho_csv, mode='r', encoding='utf-8-sig') as arquivo:
             reader = csv.DictReader(arquivo)
@@ -39,7 +44,6 @@ class Command(BaseCommand):
                         continue
 
                     tipo_proj = linha.get('projeto_tipo_projeto', '').strip()
-                    tipo_proj = MAPEAMENTO_TIPO.get(tipo_proj, tipo_proj)
 
                     # Tratar datas do Projeto
                     inicio_proj = date.fromisoformat(linha['projeto_inicio'].strip()) if linha.get('projeto_inicio') else None
@@ -71,8 +75,8 @@ class Command(BaseCommand):
                     if not titulo_tar:
                         continue  # Se for apenas registro de projeto sem tarefa
 
-                    criacao_tar = datetime.fromisoformat(linha['tarefa_criacao'].strip()) if linha.get('tarefa_criacao') else None
-                    conclusao_tar = datetime.fromisoformat(linha['tarefa_conclusao'].strip()) if linha.get('tarefa_conclusao') else None
+                    criacao_tar = self.ler_data_hora(linha.get('tarefa_criacao'))
+                    conclusao_tar = self.ler_data_hora(linha.get('tarefa_conclusao'))
 
                     # Tratar inteiros com segurança contra valores vazios ou decimais
                     est_horas = int(float(linha['tarefa_estimativa_horas'])) if linha.get('tarefa_estimativa_horas') else 0

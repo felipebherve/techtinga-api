@@ -27,6 +27,9 @@ class ProjetosPorLinguagemView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        projetos = Projeto.objects.listar_projetos_linguagem(inicio, fim, linguagem)
+        try:
+            projetos = Projeto.objects.listar_projetos_linguagem(inicio, fim, linguagem)
+        except ValueError as erro:
+            return Response({"error": str(erro)}, status=status.HTTP_400_BAD_REQUEST)
         serializer = ProjetoSerializer(projetos, many=True)
         return Response(serializer.data)

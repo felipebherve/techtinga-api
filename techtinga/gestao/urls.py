@@ -1,4 +1,5 @@
 from django.urls import path
+from rest_framework.authtoken.views import obtain_auth_token
 from gestao.views import (
     ProjetosPorLinguagemView,
     TarefasDoProjetoView,
@@ -8,6 +9,9 @@ from gestao.views import (
 )
 
 urlpatterns = [
+    # Login: recebe username e password e devolve o token
+    path('token/', obtain_auth_token, name='token'),
+
     # h) Endpoints do CRUD completo (ProjetoService)
     path('projetos/', ProjetoService.as_view(), name='projeto-list-create'),
     path('projetos/<int:pk>/', ProjetoService.as_view(), name='projeto-detail'),

@@ -11,6 +11,9 @@ class TarefasColaboradorView(APIView):
         if not responsavel:
             return Response({"error": "Informe o parâmetro 'responsavel'."}, status=status.HTTP_400_BAD_REQUEST)
 
-        tarefas = Tarefa.objects.listar_tarefas_colaborador(responsavel=responsavel)
+        try:
+            tarefas = Tarefa.objects.listar_tarefas_colaborador(responsavel=responsavel)
+        except ValueError as erro:
+            return Response({"error": str(erro)}, status=status.HTTP_400_BAD_REQUEST)
         serializer = TarefaSerializer(tarefas, many=True)
         return Response(serializer.data)

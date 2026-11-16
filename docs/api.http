@@ -1,0 +1,79 @@
+### TechTinga API · exemplos de requisições
+### Abra no VS Code com a extensão REST Client, ou copie para o Postman/Insomnia.
+### Antes: python manage.py createsuperuser e python manage.py runserver
+
+@base = http://127.0.0.1:8000/api
+@token = COLE_AQUI_O_TOKEN
+
+### 1. Login: devolve {"token": "..."}
+POST {{base}}/token/
+Content-Type: application/x-www-form-urlencoded
+
+username=admin&password=SUA_SENHA
+
+### 2. Consultas (somente GET, sem login)
+
+### Projetos com tarefas em Python criadas no período
+GET {{base}}/projetos/por-linguagem/?inicio=2026-01-01&fim=2026-12-31&linguagem=PYTHON
+
+### Tarefas de um projeto (ordenadas por responsável, status e criação)
+GET {{base}}/projetos/1/tarefas/
+
+### Tarefas de um colaborador (agrupadas por status e ordenadas por criação)
+GET {{base}}/tarefas/colaborador/?responsavel=Ricardo Luis dos Santos
+
+### Relatório anual
+GET {{base}}/relatorio/ano/?ano=2026
+
+### 3. CRUD de projetos (exige token e permissões)
+
+### Listar
+GET {{base}}/projetos/
+Authorization: Token {{token}}
+
+### Ver um projeto
+GET {{base}}/projetos/1/
+Authorization: Token {{token}}
+
+### Criar
+POST {{base}}/projetos/
+Authorization: Token {{token}}
+Content-Type: application/json
+
+{
+  "codigo": "PRJ-2026-100",
+  "nome": "Aplicativo desktop de estoque",
+  "tipo_projeto": "DESKTOP",
+  "cliente": "Loja Exemplo",
+  "gerente": "Felipe",
+  "inicio": "2026-11-10",
+  "previsao_termino": "2027-03-30",
+  "orcamento": "15000.00"
+}
+
+### Atualizar tudo
+PUT {{base}}/projetos/1/
+Authorization: Token {{token}}
+Content-Type: application/json
+
+{
+  "codigo": "PRJ-2026-100",
+  "nome": "Aplicativo desktop de estoque v2",
+  "tipo_projeto": "DESKTOP",
+  "cliente": "Loja Exemplo",
+  "gerente": "Felipe",
+  "inicio": "2026-11-10",
+  "previsao_termino": "2027-04-30",
+  "orcamento": "18000.00"
+}
+
+### Atualizar só um campo
+PATCH {{base}}/projetos/1/
+Authorization: Token {{token}}
+Content-Type: application/json
+
+{"orcamento": "20000.00"}
+
+### Excluir
+DELETE {{base}}/projetos/1/
+Authorization: Token {{token}}
