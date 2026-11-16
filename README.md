@@ -24,11 +24,25 @@ Base path: `/api/`
 
 | Method and route | What it does |
 |------------------|--------------|
+| `POST /token/` | Returns the login token (send `username` and `password`) |
 | `/projetos/`, `/projetos/<id>/` | Create, list, read, update and delete projects (requires a token) |
 | `/projetos/por-linguagem/?inicio=&fim=&linguagem=` | Projects filtered by period and programming language |
 | `/projetos/<id>/tarefas/` | Tasks of one project |
 | `/tarefas/colaborador/?responsavel=` | Tasks of one team member |
 | `/relatorio/ano/?ano=2026` | Report of projects and tasks for a year (the `ano` parameter is required) |
+
+The query endpoints accept `GET` only (other methods answer `405`) and return `400` when a parameter is invalid, for example a language that doesn't exist or `fim` before `inicio`.
+
+### Use the project CRUD with a token
+
+The CRUD uses `TokenAuthentication` and Django's default permissions (`DjangoModelPermissions`): to create, update or delete, the user needs the `add`, `change` or `delete` permission on Projeto (a superuser has all of them).
+
+```bash
+python manage.py createsuperuser
+curl -X POST http://127.0.0.1:8000/api/token/ -d "username=admin" -d "password=YOUR_PASSWORD"
+# {"token": "abc123..."}
+curl http://127.0.0.1:8000/api/projetos/ -H "Authorization: Token abc123..."
+```
 
 ### Import the CSV
 
@@ -77,16 +91,14 @@ Modeling two related entities with constraints, moving queries into custom manag
 
 I'm listing them on purpose: this is a learning project and I know what is still open.
 
-- **Token authentication isn't finished.** `/api/projetos/` uses `TokenAuthentication`, but `rest_framework.authtoken` is not in `INSTALLED_APPS` and there is no login/token endpoint yet, so today that CRUD answers `401`. The other endpoints work without login.
-- **The CSV import rejects about half of the sample file.** In the included `techtinga.csv` (1,100 rows), 575 tasks are saved and about 518 are rejected. Some rows belong to inactive or finished projects (the model blocks tasks on those, by design), and some use language values that the enumeration doesn't accept yet (`CPLUSPLUS` and `RUBY`; the enumeration has `CPLUSP` and no Ruby).
+- **The CSV import rejects part of the sample file.** In the included `techtinga.csv` (1,100 rows), 658 tasks are saved and 435 are rejected. Some rows belong to inactive or finished projects (the model blocks tasks on those, by design), and others carry invalid values on purpose (language `RUBY`, status `FINISHED`, priority outside 1 to 5, negative hours).
 - The `--csv` option of the import command isn't wired (the method is named `add_argument` instead of `add_arguments`), so it always reads `techtinga.csv`.
-- No automated tests yet (`tests.py` is still the empty Django template).
+- The automated tests only cover the managers, the token, the project CRUD and the queries so far (`python manage.py test gestao`).
 
 ## Next steps
 
-- Add `rest_framework.authtoken`, a token endpoint and a superuser flow, so the project CRUD can be used.
-- Align the language enumeration with the CSV values and report the rejected lines in a file.
-- Fix the `--csv` option and write automated tests.
+- Report the rejected import lines in a file.
+- Fix the `--csv` option and extend the automated tests.
 - Add pagination and filtering to the list endpoints.
 
 > The Django `SECRET_KEY` is read from the `DJANGO_SECRET_KEY` environment variable. If it isn't set, an insecure development key is used, so never deploy this project as it is.

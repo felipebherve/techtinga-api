@@ -24,11 +24,25 @@ Caminho base: `/api/`
 
 | Método e rota | O que faz |
 |---------------|-----------|
+| `POST /token/` | Gera o token de login (envie `username` e `password`) |
 | `/projetos/`, `/projetos/<id>/` | Criar, listar, ler, atualizar e excluir projetos (exige token) |
 | `/projetos/por-linguagem/?inicio=&fim=&linguagem=` | Projetos filtrados por período e linguagem de programação |
 | `/projetos/<id>/tarefas/` | Tarefas de um projeto |
 | `/tarefas/colaborador/?responsavel=` | Tarefas de um colaborador |
 | `/relatorio/ano/?ano=2026` | Relatório de projetos e tarefas de um ano (o parâmetro `ano` é obrigatório) |
+
+Os endpoints de consulta aceitam só `GET` (outros métodos respondem `405`) e devolvem `400` quando um parâmetro é inválido, por exemplo uma linguagem que não existe ou `fim` antes de `inicio`.
+
+### Usar o CRUD de projetos com token
+
+O CRUD usa `TokenAuthentication` e as permissões padrão do Django (`DjangoModelPermissions`): para criar, alterar ou excluir, o usuário precisa das permissões `add`, `change` ou `delete` de Projeto (um superusuário já tem todas).
+
+```bash
+python manage.py createsuperuser
+curl -X POST http://127.0.0.1:8000/api/token/ -d "username=admin" -d "password=SUA_SENHA"
+# {"token": "abc123..."}
+curl http://127.0.0.1:8000/api/projetos/ -H "Authorization: Token abc123..."
+```
 
 ### Importar o CSV
 
@@ -77,16 +91,14 @@ Modelar duas entidades relacionadas com restrições, mover consultas para manag
 
 Listo de propósito: é um projeto de aprendizado e sei o que ainda está em aberto.
 
-- **A autenticação por token não está terminada.** O `/api/projetos/` usa `TokenAuthentication`, mas o `rest_framework.authtoken` não está em `INSTALLED_APPS` e ainda não há endpoint de login/token, então hoje esse CRUD responde `401`. Os outros endpoints funcionam sem login.
-- **A importação do CSV rejeita cerca de metade do arquivo de exemplo.** No `techtinga.csv` incluído (1.100 linhas), 575 tarefas são salvas e cerca de 518 são rejeitadas. Algumas linhas pertencem a projetos inativos ou finalizados (o model bloqueia tarefas nesses casos, de propósito) e outras usam valores de linguagem que a enumeração ainda não aceita (`CPLUSPLUS` e `RUBY`; a enumeração tem `CPLUSP` e não tem Ruby).
+- **A importação do CSV rejeita parte do arquivo de exemplo.** No `techtinga.csv` incluído (1.100 linhas), 658 tarefas são salvas e 435 são rejeitadas. Algumas linhas pertencem a projetos inativos ou finalizados (o model bloqueia tarefas nesses casos, de propósito) e outras têm valores inválidos de propósito (linguagem `RUBY`, status `FINISHED`, prioridade fora de 1 a 5, horas negativas).
 - A opção `--csv` do comando de importação não está ligada (o método se chama `add_argument` em vez de `add_arguments`), então ele sempre lê o `techtinga.csv`.
-- Ainda não há testes automatizados (`tests.py` é o modelo vazio do Django).
+- Os testes automatizados ainda cobrem só os managers, o token, o CRUD de projetos e as consultas (`python manage.py test gestao`).
 
 ## Próximos passos
 
-- Adicionar `rest_framework.authtoken`, um endpoint de token e um fluxo de superusuário, para o CRUD de projetos poder ser usado.
-- Alinhar a enumeração de linguagens com os valores do CSV e registrar as linhas rejeitadas em um arquivo.
-- Corrigir a opção `--csv` e escrever testes automatizados.
+- Registrar as linhas rejeitadas da importação em um arquivo.
+- Corrigir a opção `--csv` e ampliar os testes automatizados.
 - Adicionar paginação e filtros nos endpoints de listagem.
 
 > A `SECRET_KEY` do Django é lida da variável de ambiente `DJANGO_SECRET_KEY`. Se ela não estiver definida, é usada uma chave de desenvolvimento insegura, então nunca publique este projeto em produção como está.
