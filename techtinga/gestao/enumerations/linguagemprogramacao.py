@@ -5,7 +5,7 @@ class LinguagemProgramacao(models.TextChoices):
     JS = 'JS', 'JavaScript'
     JAVA = 'JAVA', 'Java'
     CSHARP = 'CSHARP', 'C#'
-    CPLUSP = 'CPLUSP', 'C++'
+    CPLUSPLUS = 'CPLUSPLUS', 'C++'
     C = 'C', 'C'
     PHP = 'PHP', 'PHP'
     DART = 'DART', 'Dart'

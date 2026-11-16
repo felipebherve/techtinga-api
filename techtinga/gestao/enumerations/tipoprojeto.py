@@ -7,3 +7,4 @@ class TipoProjeto(models.TextChoices):
     LIBRARY = 'LIBRARY', 'Library'
     DATA_SCIENCE = 'DATA_SCIENCE', 'Data Science'
     AI = 'AI', 'Inteligência Artificial'
+    DESKTOP = 'DESKTOP', 'Desktop'

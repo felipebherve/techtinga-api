@@ -21,11 +21,6 @@ class Command(BaseCommand):
         sucesso = 0
         erros = 0
 
-        # Opções do Enum aceitas pelo model Projeto
-        MAPEAMENTO_TIPO = {
-            'DESKTOP': 'WEB',  # Ajuste para uma opção válida do seu Enum caso DESKTOP não exista
-        }
-
         with open(caminho_csv, mode='r', encoding='utf-8-sig') as arquivo:
             reader = csv.DictReader(arquivo)
 
@@ -39,7 +34,6 @@ class Command(BaseCommand):
                         continue
 
                     tipo_proj = linha.get('projeto_tipo_projeto', '').strip()
-                    tipo_proj = MAPEAMENTO_TIPO.get(tipo_proj, tipo_proj)
 
                     # Tratar datas do Projeto
                     inicio_proj = date.fromisoformat(linha['projeto_inicio'].strip()) if linha.get('projeto_inicio') else None
